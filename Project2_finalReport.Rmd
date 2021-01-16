@@ -33,3 +33,4 @@ The dataset has 5 features and 1372 observations. The features are as follows:
 
 5) **class**: is the target, binary variable where a value of 0 represents a geunine or authentic bank note and a value of 1 represents a fake note.
 
+This is trial
