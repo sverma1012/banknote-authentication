@@ -1,5 +1,5 @@
 ---
-title: "Bank Notes Authenticity Dataset"
+title: "Bank Notes Authentication Dataset"
 author: "C M Nafi and Sneha Verma"
 date: "1/27/2021"
 output: word_document
@@ -32,6 +32,3 @@ The dataset has 5 features and 1372 observations. The features are as follows:
 4) **entropy**: is a continuous value representing a quantity used to describe the amount of information which must be coded for, by a compression algorithm. A higher entropy value implies that there is a higher amount of information in the image.
 
 5) **class**: is the target, binary variable where a value of 0 represents a geunine or authentic bank note and a value of 1 represents a fake note.
-
-This is trial
-A trial by combat
