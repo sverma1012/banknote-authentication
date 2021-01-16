@@ -1,0 +1,35 @@
+---
+title: "Bank Notes Authenticity Dataset"
+author: "C M Nafi and Sneha Verma"
+date: "1/27/2021"
+output: word_document
+---
+
+## Abstract
+
+DO AT THE END OF THE PROJECT
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+NOTE: Before running the file, make sure that the location of the data corresponds with the location on your device.
+
+This dataset (obtained from [Kaggle](https://www.kaggle.com/ritesaluja/bank-note-authentication-uci-data)) was generated from genuine and forged banknote images.An industrial camera was used for print inspection and the Wavelet Transform tool were used to extract features from the images.
+
+This research project will focus on the central question:
+
+**How well can the image features predict the authenticity of the banknote?**
+
+The dataset has 5 features and 1372 observations. The features are as follows:
+
+1) **variance**: is a continuous value which finds how each pixel varies from the neighboring pixels and classifies them into different regions. If the pixel values are close to the mean pixel value than the variance is low and if they are not close to the mean pixel value than it is a high variance.
+
+2) **skewness**: is a continuous value measuring the lack of symmetry. A symmetric data would have a value of 0. Negative values indicate left-skewness and positive values indicate right-skewness.
+
+3) **kurtosis**: a continuous values measuring whether the data is heavy-tailed or light-tailed relative to a normal distribution. Datasets with high kurtosis have heavy-tails or outliers and those with low kurtosis have light tails or lack of outliers.
+
+4) **entropy**: is a continuous value representing a quantity used to describe the amount of information which must be coded for, by a compression algorithm. A higher entropy value implies that there is a higher amount of information in the image.
+
+5) **class**: is the target, binary variable where a value of 0 represents a geunine or authentic bank note and a value of 1 represents a fake note.
+
