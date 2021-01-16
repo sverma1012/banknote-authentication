@@ -40,3 +40,4 @@ banknote = read.csv('Original_Banknote_Authentication.csv')
 head(banknote)
 ```
 
+This shows that there are 5 columns.
