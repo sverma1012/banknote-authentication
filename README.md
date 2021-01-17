@@ -1,5 +1,5 @@
 # Logistic Regression 
-## Project Banknote_Authentication
+## Project Banknote Authentication
 Team Members:
 * C M Nafi :call_me_hand:
 * Sneha Verma :v:
