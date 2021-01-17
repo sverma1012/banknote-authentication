@@ -12,4 +12,7 @@ Team Members:
  * R 
  * Github
  
- #### The Dataset can be found here
+ #### About the Dataset:
+ 
+ This dataset (obtained from [Kaggle](https://www.kaggle.com/ritesaluja/bank-note-authentication-uci-data)) was generated from genuine and forged banknote images.An industrial camera was used for print inspection and the Wavelet Transform tool were used to extract features from the images.
+ 
