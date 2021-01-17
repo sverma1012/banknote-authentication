@@ -9,6 +9,7 @@ Team Members:
  
  #### Language and Tools:
  * R Studio
- * 
+ * R 
+ * Github
  
  
