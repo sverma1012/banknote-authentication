@@ -8,4 +8,5 @@ Team Members:
  A collaborative project for **Applied Statistics (MATH-327)** analyzing if banknotes are genuine or not through statistical analysis and fitting a logistic model.
  
  #### Language and Tools:
+ * R
  
