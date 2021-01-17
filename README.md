@@ -4,4 +4,8 @@ Team Members:
 * C M Nafi :call_me_hand:
 * Sneha Verma 
 
- A collaborative project by C M Nafi and Sneha Verma for **Applied Statistics (MATH-327)** analyzing if banknotes are genuine or not through statistical analysis and fitting a logistic model using R.
+ #### Short Description:
+ A collaborative project for **Applied Statistics (MATH-327)** analyzing if banknotes are genuine or not through statistical analysis and fitting a logistic model.
+ 
+ #### Language and Tools:
+ 
