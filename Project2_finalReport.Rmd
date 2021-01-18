@@ -1,5 +1,5 @@
 ---
-title: "Bank Notes Authentication Dataset"
+title: "Logistic Regression Analysis of Banknotes Authenticity"
 author: "C M Nafi and Sneha Verma"
 date: "1/27/2021"
 output: word_document
@@ -19,7 +19,7 @@ This dataset (obtained from [Kaggle](https://www.kaggle.com/ritesaluja/bank-note
 
 This research project will focus on the central question:
 
-**How well can the image features predict the authenticity of the banknote?**
+**How well can the image features predict if the banknote is non-counterfeit?**
 
 The dataset has 5 features and 1372 observations. The features are as follows:
 
@@ -38,6 +38,121 @@ The dataset has 5 features and 1372 observations. The features are as follows:
 ```{r}
 banknote = read.csv('Original_Banknote_Authentication.csv')
 head(banknote)
+
+# Let us rename the variable curtosis to the more commonly used spelling
+names(banknote)[names(banknote) == 'curtosis'] = 'kurtosis'
+names(banknote)[names(banknote) == 'class'] = 'notAuthentic'
 ```
 
-This shows that there are 5 columns.
+
+## Data Characteristics
+
+Looking at this dataset, it can be observed that there are five variables (one of them is the target variable: notAuthentic). 
+
+### Scatterplot Matrix
+
+Let us create a scatterplot matrix coloured by the outcome variable:
+
+```{r}
+pairs(banknote, col=banknote$notAuthentic+1)
+```
+
+The scatterplot matrix shows that there might be a relationship between some of the predictor variables and the response variable. It appears that for lower values of variance in the image, the banknote is likely to be fake and images with higher variance values were of genuine bank notes. Further, it appears that genuine bank notes have higher skewness; however, there does not appear to be a high level of correlation because fake bank notes also have relatively high bank skewness. Similarly, genuine bank notes have lower values of kurtosis as compared to fake notes; however, fake notes have kurtosis values of the entire range, this may make it harder to differentiate between genuine and fake banknotes. Lastly, it appears that entropy is not a good predictor of authenticity because images of fake and genuine banknotes have entropy values of the entire range of possible values indicating a weak relationship between teh two variables.
+
+### Correlation Matrix
+
+```{r}
+banknoteCorr <- round(cor(banknote),2)
+head(banknoteCorr)
+
+library(reshape2)
+melted_banknote <- melt(banknoteCorr)
+head(melted_banknote)
+
+library(ggplot2)
+ggplot(data = melted_banknote, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+
+This matrix shows the correlation matrix between the variables in the data set. Lighter boxes indicate higher correlation values. 
+
+It appears that there is a high correlation between the authenticity of banknotes and the kurtosis. There also appears to be a relatively higher correlation between authenticity and entropy compared to the correlation between skewness and variance with authenticity. This is interesting because the scatterplot matrix between authenticity and entropy does not show a strong relationship.
+
+### Plots of Individual Variables
+
+#### variance
+
+```{r}
+summary(banknote$variance)
+```
+
+The minimum value of variance is -7 and the maximum value is 6.8 with a median of 0.496 and a mean of 0.434. 
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow=c(1,2))
+hist(banknote$variance, xlab = "Distribution of image variance")
+boxplot(banknote$variance, xlab = "Distribution of image variance")
+```
+
+The histogram of the variance shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Further, the boxplot shows that there are no outliers in this variable. 
+
+#### skewness
+
+```{r}
+summary(banknote$skewness)
+```
+
+The minimum value of skewness is -13.77 and the maximum value is 12.95 with a median of 2.32 and a mean of 1.92. 
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow=c(1,2))
+hist(banknote$skewness, xlab = "Distribution of image skewness")
+boxplot(banknote$skewness, xlab = "Distribution of image skewness")
+```
+
+The histogram of the skewness shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Also, the distribution is not constant with high and low peaks next to each other.
+Further, the boxplot shows that there are no outliers in this variable. The boxplot also shows the left-skewness with a long left tail.
+
+#### kurtosis
+
+```{r}
+summary(banknote$kurtosis)
+```
+
+The minimum value of variance is -5.29 and the maximum value is 17.93 with a median of 0.617 and a mean of 1.398.
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow=c(1,2))
+hist(banknote$kurtosis, xlab = "Distribution of image kurtosis")
+boxplot(banknote$kurtosis, xlab = "Distribution of image kurtosis")
+```
+
+The histogram of the variance shows right-skewness. Further, the boxplot displays this skewness with a long right tail and also displays that there are outliers at the right end of the distribution.
+
+To account for this skewness, let us try a square-root transformation on this variable:
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow=c(1,2))
+hist(sqrt(banknote$kurtosis), xlab = "Log distribution of image kurtosis")
+boxplot(sqrt(banknote$kurtosis), xlab = "Log distribution of image kurtosis")
+
+```
+
+The square-root transformation of the kurtosis is more symmetric. We will use this transformation in our model.
+
+#### entropy
+
+```{r}
+summary(banknote$entropy)
+```
+
+The minimum value of variance is -8.55 and the maximum value is 2.45 with a median of -0.59 and a mean of -1.19. 
+
+```{r fig.height=5, fig.width=8.5}
+par(mfrow=c(1,2))
+hist(banknote$entropy, xlab = "Distribution of image entropy")
+boxplot(banknote$entropy, xlab = "Distribution of image entropy")
+```
+
+The histogram of the variance shows left-skewness. Further, the boxplot displays this skewness with a long left tail and also displays that there are outliers at the left end of the distribution.
+
