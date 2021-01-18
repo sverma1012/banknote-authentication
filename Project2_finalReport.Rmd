@@ -150,3 +150,14 @@ boxplot(banknote$entropy, xlab = "Distribution of image entropy")
 
 The histogram of the variance shows moderate left-skewness. Further, the boxplot displays this skewness with a long lower tail and also displays outliers at the lower end of the distribution. However, since there is only moderate skewness, we will not apply a transformation at the point.
 
+
+## First-Order Logistic Regression Model
+
+Let us now fit a logistic regression model that includes all of the variables.
+
+```{r}
+fit1 = glm(notAuthentic ~ variance + skewness + kurtosis + entropy, data = banknote, family = binomial)
+summary(fit1)
+```
+
+
