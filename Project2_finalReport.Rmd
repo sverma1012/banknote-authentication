@@ -97,7 +97,7 @@ hist(banknote$variance, xlab = "Distribution of image variance")
 boxplot(banknote$variance, xlab = "Distribution of image variance")
 ```
 
-The histogram of the variance shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Further, the boxplot shows that there are no outliers in this variable. 
+The histogram of the variance shows mild left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Further, the boxplot shows that there are no outliers in this variable. 
 
 #### skewness
 
@@ -113,8 +113,8 @@ hist(banknote$skewness, xlab = "Distribution of image skewness")
 boxplot(banknote$skewness, xlab = "Distribution of image skewness")
 ```
 
-The histogram of the skewness shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Also, the distribution is not constant with high and low peaks next to each other.
-Further, the boxplot shows that there are no outliers in this variable. The boxplot also shows the left-skewness with a long left tail.
+The histogram of the skewness shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted.
+Further, the boxplot shows that there are no outliers in this variable. The boxplot also shows the left-skewness with a long lower tail.
 
 #### kurtosis
 
@@ -131,10 +131,7 @@ hist(banknote$kurtosis, xlab = "Distribution of image kurtosis")
 boxplot(banknote$kurtosis, xlab = "Distribution of image kurtosis")
 ```
 
-The histogram of the variance shows right-skewness. Further, the boxplot displays this skewness with a long right tail and also displays that there are outliers at the right end of the distribution.
-
-To account for this skewness, let us try a square-root transformation on this variable:
-
+The histogram of the variance shows moderate right-skewness. Further, the boxplot displays this skewness with a longer upper tail and also displays outliers at the upper end of the distribution. However, since there is moderate skewness, we will not transform the variable at this point.
 
 #### entropy
 
@@ -151,5 +148,5 @@ hist(banknote$entropy, xlab = "Distribution of image entropy")
 boxplot(banknote$entropy, xlab = "Distribution of image entropy")
 ```
 
-The histogram of the variance shows left-skewness. Further, the boxplot displays this skewness with a long left tail and also displays that there are outliers at the left end of the distribution.
+The histogram of the variance shows moderate left-skewness. Further, the boxplot displays this skewness with a long lower tail and also displays outliers at the lower end of the distribution. However, since there is only moderate skewness, we will not apply a transformation at the point.
 
