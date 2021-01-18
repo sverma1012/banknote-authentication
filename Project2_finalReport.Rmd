@@ -60,8 +60,11 @@ pairs(banknote, col=banknote$notAuthentic+1)
 The scatterplot matrix shows that there might be a relationship between some of the predictor variables and the response variable. It appears that for lower values of variance in the image, the banknote is likely to be fake and images with higher variance values were of genuine bank notes. Further, it appears that genuine bank notes have higher skewness; however, there does not appear to be a high level of correlation because fake bank notes also have relatively high bank skewness. Similarly, genuine bank notes have lower values of kurtosis as compared to fake notes; however, fake notes have kurtosis values of the entire range, this may make it harder to differentiate between genuine and fake banknotes. Lastly, it appears that entropy is not a good predictor of authenticity because images of fake and genuine banknotes have entropy values of the entire range of possible values indicating a weak relationship between teh two variables.
 
 ### Correlation Matrix
-<!-- Note: We need to add all the dependencies in the readme file, as just calling the library doesn't install it.  -->
+
 ```{r}
+install.packages('reshape2')
+install.packages('ggplot2')
+
 banknoteCorr <- round(cor(banknote),2)
 head(banknoteCorr)
 
@@ -121,7 +124,6 @@ summary(banknote$kurtosis)
 
 The minimum value of variance is -5.29 and the maximum value is 17.93 with a median of 0.617 and a mean of 1.398. 
 
-<!-- Large difference between the mean and median indicates that there might be possible outliers, maybe question here? -->
 
 ```{r fig.height=5, fig.width=8.5}
 par(mfrow=c(1,2))
@@ -133,18 +135,6 @@ The histogram of the variance shows right-skewness. Further, the boxplot display
 
 To account for this skewness, let us try a square-root transformation on this variable:
 
-```{r fig.height=5, fig.width=8.5}
-par(mfrow=c(1,2))
-hist(sqrt(banknote$kurtosis), xlab = "Log distribution of image kurtosis")
-boxplot(sqrt(banknote$kurtosis), xlab = "Log distribution of image kurtosis")
-
-```
-
-The square-root transformation of the kurtosis is more symmetric. We will use this transformation in our model.
-
-<!-- Note: Square root of negative numbers, nans produced.  -->
-<!-- Possible links to follow :https://math.stackexchange.com/questions/174406/arcsine-squareroot-transformation-for-data-ranging-from-1-to-1 -->
-<!-- Other transformation : https://www.rdocumentation.org/packages/dlookr/versions/0.3.14/topics/transform -->
 
 #### entropy
 
@@ -154,7 +144,6 @@ summary(banknote$entropy)
 
 The minimum value of variance is -8.55 and the maximum value is 2.45 with a median of -0.59 and a mean of -1.19. 
 
-<!-- Same problem with mean and median value, something off?  -->
 
 ```{r fig.height=5, fig.width=8.5}
 par(mfrow=c(1,2))
