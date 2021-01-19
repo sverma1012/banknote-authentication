@@ -167,8 +167,26 @@ exp(fit1$coefficients)
 exp(confint(fit1))
 ```
 
-The odds of the note being fake is 0.0039 higher for each unit of variance with a 95% confidence interval of 0.0000059 to 0.00621 
+The odds of the note being fake is 0.00039 times higher for each unit of variance with a 95% confidence interval of 0.0000059 to 0.00621 higher odds of the note being fake per variance unit.
 
-The odds of the note being fake is 
+The odds of the note being fake is 0.0151 times higher for each unit of skewness with a 95% confidence interval of 0.00171 to 0.0641 higher odds of the note being fake per skewness unit.
+
+The odds of the note being fake is 0.00505 times higher for each unit of kurtosis with a 95% confidence interval of 0.000306 to 0.0320 higher odds of the note being fake per kurtosis unit.
+
+The odds of the note being fake is 0.546 times higher for each unit of entropy with a 95% confidence interval of 0.273 to 1.04 higher odds of the note being fake per entropy unit.
+
+### Plots
+
+```{r fig.height=3.5, fig.width=7.5}
+par (mfrow=c(1,2))
+logit.fit1 = predict(fit1)
+plot (jitter (notAuthentic, 0.2) ~ logit.fit1, data=banknote)
+
+pihat.fit1 = predict(fit1, type='response')
+pihat.ord = order(pihat.fit1)
+lines (logit.fit1[pihat.ord], pihat.fit1[pihat.ord])
+lines (lowess (logit.fit1[pihat.ord], pihat.fit1[pihat.ord]), col='red', lty=2)
+
+```
 
 
