@@ -160,4 +160,15 @@ fit1 = glm(notAuthentic ~ variance + skewness + kurtosis + entropy, data = bankn
 summary(fit1)
 ```
 
+While this fit products a warning message, it does converge on parameter estimates and p-values. From the resultant summary, we can see that all variables are significant at the 0.001 significance level, except for entropy which is significant at the 0.1 level. The slopes are given in the logit form, let us convert it to the odds ratio.
+
+```{r}
+exp(fit1$coefficients)
+exp(confint(fit1))
+```
+
+The odds of the note being fake is 0.0039 higher for each unit of variance with a 95% confidence interval of 0.0000059 to 0.00621 
+
+The odds of the note being fake is 
+
 
