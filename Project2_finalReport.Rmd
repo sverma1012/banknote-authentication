@@ -62,8 +62,8 @@ The scatterplot matrix shows that there might be a relationship between some of 
 ### Correlation Matrix
 
 ```{r}
-install.packages('reshape2')
-install.packages('ggplot2')
+#install.packages('reshape2')
+#install.packages('ggplot2')
 
 banknoteCorr <- round(cor(banknote),2)
 head(banknoteCorr)
@@ -175,10 +175,12 @@ The odds of the note being fake is 0.00505 times higher for each unit of kurtosi
 
 The odds of the note being fake is 0.546 times higher for each unit of entropy with a 95% confidence interval of 0.273 to 1.04 higher odds of the note being fake per entropy unit.
 
-### Plots
+### Model Diagnostics
+
+1) Jittered response v/s predicted values
 
 ```{r fig.height=3.5, fig.width=7.5}
-par (mfrow=c(1,2))
+par(mfrow=c(1,2))
 logit.fit1 = predict(fit1)
 plot (jitter (notAuthentic, 0.2) ~ logit.fit1, data=banknote)
 
@@ -189,4 +191,44 @@ lines (lowess (logit.fit1[pihat.ord], pihat.fit1[pihat.ord]), col='red', lty=2)
 
 ```
 
+EXPLAIN
+
+2) Residuals v/s Fitted Values
+
+```{r}
+plot(fit1, which = 1)
+```
+
+The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerening. Further, there do appear to be a few points with relatively higher outliers; however, they are not greater than 3 so it is not concerning.
+
+3) Leverage
+
+```{r}
+plot(fit1, which = 5)
+```
+
+EXPLAIN
+Look at class video describing code 10.48 to describe this plot
+
+4) Multicollinearity
+
+```{r}
+car::vif(fit1)
+```
+
+EXPLAIN
+All, except entropy, are greater than 5. clear multicollinearity.
+
+## Model Selection
+
+### Stepwise Regression
+
+Let us now apply stepwise regression to the first-order model to see which variables should be kept in the model.
+
+```{r}
+fit1aic = step(fit1, direction = 'both')
+summary(fit1aic)
+```
+
+EXPLAIN
 
