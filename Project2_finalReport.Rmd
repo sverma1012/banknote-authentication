@@ -217,7 +217,11 @@ We can see that there are some possible large residuals at datapoint 919.
 We can also check the Cook's distance to see the amount of influence a particular data point has. 
 Our moderate Cook's D cutoff point is ( 0.00728 ) and our Unusual Cook's D cutoff point is (0.01093). There are several points that are showing large cook's distance.
 
-DID YOU TALK ABOUT LEVERAGE????
+LEVERAGE: 2(k+1)/n somewhat high
+3(k+1)/n extremely high
+
+Cook's distance: 0.5- moderate
+1 - high
 
 4) Multicollinearity
 
