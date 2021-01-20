@@ -199,7 +199,7 @@ EXPLAIN
 plot(fit1, which = 1)
 ```
 
-The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerening. Further, there do appear to be a few points with relatively higher outliers; however, they are not greater than 3 so it is not concerning.
+The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning; it shows clear linearity. Further, there do appear to be a few points with relatively higher outliers; however, they are not greater than 3 so it is not concerning.
 
 3) Leverage
 
@@ -228,6 +228,15 @@ Let us now apply stepwise regression to the first-order model to see which varia
 ```{r}
 fit1aic = step(fit1, direction = 'both')
 summary(fit1aic)
+```
+
+EXPLAIN
+
+
+```{r}
+fit1bic = step(fit1, direction = "both", k = log(fit1$rank + fit1$df.residual))
+
+summary(fit1bic)
 ```
 
 EXPLAIN
