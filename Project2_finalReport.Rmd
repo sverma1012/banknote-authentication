@@ -191,7 +191,7 @@ lines (lowess (logit.fit1[pihat.ord], pihat.fit1[pihat.ord]), col='red', lty=2)
 
 ```
 
-EXPLAIN
+From the "Jittered response v/s predicted values"  plot, we can see the probability of predicted logit. We can see that the probability is close to 1 when logit values are greater than 0. We are going to check the residual v/s Fitted values next to check the linearity. 
 
 2) Residuals v/s Fitted Values
 
@@ -207,8 +207,13 @@ The trendline in the residual v/s fitted plot shows little to no deviation from 
 plot(fit1, which = 5)
 ```
 
-EXPLAIN
-Look at class video describing code 10.48 to describe this plot
+In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset. 
+We can see that there are some possible large residuals at datapoint 919. However, it's close to 3 so we are not going to react to that. 
+
+We can also check the Cook's distance to see the amount of influence a particular data point has. 
+Our moderate Cook's D cutoff point is ( 0.00728 ) and our Unusual Cook's D cutoff point is (0.01093). There are several points that are showing large cook's distance.
+
+
 
 4) Multicollinearity
 
@@ -216,8 +221,7 @@ Look at class video describing code 10.48 to describe this plot
 car::vif(fit1)
 ```
 
-EXPLAIN
-All, except entropy, are greater than 5. clear multicollinearity.
+We can see that some predictors are highly correlated to each other. 
 
 ## Model Selection
 
@@ -230,7 +234,9 @@ fit1aic = step(fit1, direction = 'both')
 summary(fit1aic)
 ```
 
-EXPLAIN
+According to this result, there are no steps that can be taken to decrease the value of AIC.
+
+Let us now try stepwise regression with the BIC criterion:
 
 
 ```{r}
@@ -239,5 +245,12 @@ fit1bic = step(fit1, direction = "both", k = log(fit1$rank + fit1$df.residual))
 summary(fit1bic)
 ```
 
-EXPLAIN
+The result in BIC stepwise regression removed entropy from the model.  
+
+We can also see that the residual deviance is slightly better in AIC ( 49.891) compare to BIC (53.299) which is not too bad. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model. 
+
+Now we are going to check interaction effect 
+
+
+
 
