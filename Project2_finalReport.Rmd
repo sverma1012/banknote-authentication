@@ -191,7 +191,11 @@ lines (lowess (logit.fit1[pihat.ord], pihat.fit1[pihat.ord]), col='red', lty=2)
 
 ```
 
-From the "Jittered response v/s predicted values"  plot, we can see the probability of predicted logit. We can see that the probability is close to 1 when logit values are greater than 0. We are going to check the residual v/s Fitted values next to check the linearity. 
+From the "Jittered response v/s predicted values"  plot, we can see the probability of predicted logit. We can see that the probability is 1 when logit values are greater than 0. This plot shows that the logistic regression is a perfect fit to the model because the logit values when the note is genuine are clustered at the lower-left of the graph and the values when the note is fake are clustered at the top-right and the logistic curve predicts this clear distinction and nealy perfectly fits the data. 
+
+On the other hand, the smoothing spline bends at certain data points which is not mirrored by the logistic curve.
+
+We are going to check the residual v/s Fitted values next to check the linearity. 
 
 2) Residuals v/s Fitted Values
 
@@ -208,11 +212,12 @@ plot(fit1, which = 5)
 ```
 
 In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset. 
-We can see that there are some possible large residuals at datapoint 919. However, it's close to 3 so we are not going to react to that. 
+We can see that there are some possible large residuals at datapoint 919.
 
 We can also check the Cook's distance to see the amount of influence a particular data point has. 
 Our moderate Cook's D cutoff point is ( 0.00728 ) and our Unusual Cook's D cutoff point is (0.01093). There are several points that are showing large cook's distance.
 
+DID YOU TALK ABOUT LEVERAGE????
 
 4) Multicollinearity
 
@@ -220,7 +225,7 @@ Our moderate Cook's D cutoff point is ( 0.00728 ) and our Unusual Cook's D cutof
 car::vif(fit1)
 ```
 
-We can see that some predictors are highly correlated to each other. 
+We can see that some predictors are highly correlated to each other. WHY?
 
 ## Model Selection
 
@@ -246,12 +251,11 @@ summary(fit1bic)
 
 The result in BIC stepwise regression removed entropy from the model.  
 
-We can also see that the residual deviance is slightly better in AIC ( 49.891) compare to BIC (53.299) which is not too bad. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model.
+We can also see that the residual deviance is slightly better in AIC (49.891) compare to BIC (53.299) although the diffeerence is not too large. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model.
 
-/// Tried interaction here:
+### Interaction Model
 
 Now we are going to check interaction effect 
-
 
 ```{r}
 fit_int1 = glm (notAuthentic ~ variance + skewness + kurtosis + entropy + 
@@ -278,8 +282,4 @@ fit_int1_aic = step(fit_int1, direction = 'both')
 summary(fit_int1_aic)
 
 ```
-
-fit1bic = step(fit1, direction = "both", k = log(fit1$rank + fit1$df.residual))
-
-summary(fit1bic)
 
