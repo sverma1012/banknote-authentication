@@ -247,10 +247,40 @@ summary(fit1bic)
 
 The result in BIC stepwise regression removed entropy from the model.  
 
-We can also see that the residual deviance is slightly better in AIC ( 49.891) compare to BIC (53.299) which is not too bad. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model. 
+We can also see that the residual deviance is slightly better in AIC ( 49.891) compare to BIC (53.299) which is not too bad. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model.
+
+/// Tried interaction here:
 
 Now we are going to check interaction effect 
 
 
+```{r}
+fit_int1 = glm (notAuthentic ~ variance + skewness + kurtosis + entropy + 
+                    entropy:(variance + skewness + kurtosis), data=banknote, family=binomial)
+summary(fit_int1)
+```
 
+Stepwise here:
+
+```{r}
+fit_int1bic = step(fit_int1, direction = "both", k = log(fit1$rank + fit1$df.residual))
+
+summary(fit_int1bic)
+
+```
+
+BIC removes every interaction
+
+
+How about AIC:
+```{r}
+
+fit_int1_aic = step(fit_int1, direction = 'both')
+summary(fit_int1_aic)
+
+```
+
+fit1bic = step(fit1, direction = "both", k = log(fit1$rank + fit1$df.residual))
+
+summary(fit1bic)
 
