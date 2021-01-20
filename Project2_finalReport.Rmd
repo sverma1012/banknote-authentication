@@ -211,13 +211,13 @@ The trendline in the residual v/s fitted plot shows little to no deviation from 
 plot(fit1, which = 5)
 ```
 
-In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset. 
-We can see that there are some possible large residuals at datapoint 919.
+In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset.
 
-We can also check the Cook's distance to see the amount of influence a particular data point has. 
-Our moderate Cook's D cutoff point is ( 0.00728 ) and our Unusual Cook's D cutoff point is (0.01093). There are several points that are showing large cook's distance.
+Let's calculate  very high values for Leverage in our dataset:
+Using the formula (3(k+1))/n we found that our very high leverage value is 0.01093. There are many data points which have high leverage points in this plot. 
 
-DID YOU TALK ABOUT LEVERAGE????
+We can also see the Cook's distance on the plot, which looks fine because most of the values are <0.5. 
+
 
 4) Multicollinearity
 
@@ -225,7 +225,7 @@ DID YOU TALK ABOUT LEVERAGE????
 car::vif(fit1)
 ```
 
-We can see that some predictors are highly correlated to each other. WHY?
+We can see that some predictors are highly correlated to each other because their VIF value>5. Only entropy has a VIF value <5. 
 
 ## Model Selection
 
