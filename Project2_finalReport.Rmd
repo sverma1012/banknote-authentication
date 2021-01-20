@@ -210,6 +210,9 @@ plot(fit1, which = 5)
 EXPLAIN
 Look at class video describing code 10.48 to describe this plot
 
+(2(k+1))/n > somewhat high
+(3(k+1))/n > extremely high
+
 4) Multicollinearity
 
 ```{r}
