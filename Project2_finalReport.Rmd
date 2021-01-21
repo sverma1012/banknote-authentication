@@ -203,7 +203,7 @@ We are going to check the residual v/s Fitted values next to check the linearity
 plot(fit1, which = 1)
 ```
 
-The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning; it shows clear linearity. Further, there do appear to be a few points with relatively higher outliers; however, they are not greater than 3 so it is not concerning.
+The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning; it shows clear linearity. Further, there do appear to be a few points with relatively higher outliers (lineobservations 919 and 943).
 
 3) Leverage
 
@@ -214,18 +214,9 @@ plot(fit1, which = 5)
 In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset.
 
 Let's calculate  very high values for Leverage in our dataset:
-Using the formula (3(k+1))/n we found that our very high leverage value is 0.01093. There are many data points which have high leverage points in this plot. 
+Using the formula (3(k+1))/n we found that our very high leverage value is 0.01093. There are many data points which have high leverage points in this plot. Thus, there are points with high amounts of influence.
 
-We can also see the Cook's distance on the plot, which looks fine because most of the values are <0.5. 
-
-<<<<<<< HEAD
-LEVERAGE: 2(k+1)/n somewhat high
-3(k+1)/n extremely high
-
-Cook's distance: 0.5- moderate
-1 - high
-=======
->>>>>>> 125aee192a3a91b071a273986a31f0ed39b5ae55
+We can also see the Cook's distance on the plot, which looks fine because all of the values are less than 0.5. 
 
 4) Multicollinearity
 
@@ -233,7 +224,7 @@ Cook's distance: 0.5- moderate
 car::vif(fit1)
 ```
 
-We can see that some predictors are highly correlated to each other because their VIF value>5. Only entropy has a VIF value <5. 
+We can see that some predictors are highly correlated to each other because their VIF value are greater than 5. Only entropy has a VIF value of less than 5. 
 
 ## Model Selection
 
@@ -259,35 +250,70 @@ summary(fit1bic)
 
 The result in BIC stepwise regression removed entropy from the model.  
 
-We can also see that the residual deviance is slightly better in AIC (49.891) compare to BIC (53.299) although the diffeerence is not too large. As BIC criterion removed entropy from the model, which is not very significant. We are going to use the BIC model.
+We can also see that the residual deviance is slightly better in AIC (49.891) compare to BIC (53.299) although the diffeerence is not too large. Due to this, if we were to continue with the model, we would recommend using the AIC criterion.
 
 ### Interaction Model
 
-Now we are going to check interaction effect 
+Now we are going to check interaction effects for all variables: 
 
 ```{r}
-fit_int1 = glm (notAuthentic ~ variance + skewness + kurtosis + entropy + 
-                    entropy:(variance + skewness + kurtosis), data=banknote, family=binomial)
+fit_int1 = glm(notAuthentic ~ (variance + skewness + kurtosis + entropy)^2, family = binomial, data = banknote)
+
 summary(fit_int1)
 ```
 
-Stepwise here:
+This interaction model gives an error that the algorithm has not been able to converge and all the variables in this model have high p-values close to 1.0 making them insignificant.
+
+Let us try another interaction plot with a few of the variables:
 
 ```{r}
-fit_int1bic = step(fit_int1, direction = "both", k = log(fit1$rank + fit1$df.residual))
+fit_int2 = glm (notAuthentic ~ variance + skewness + kurtosis + entropy + 
+                    entropy:(variance + skewness + kurtosis), data=banknote, family=binomial)
+summary(fit_int2)
+```
 
-summary(fit_int1bic)
+This model converges to a solution. With the results table, one can observe that all the variables (without interactions) are significant, except entropy and the variance and entropy interaction is significant at the 0.05 significance level. 
+
+
+Before we interpret the results, let us attempt this model with centered variables:
+
+```{r}
+banknote$variance.c = banknote$variance - mean(banknote$variance)
+
+banknote$skewness.c = banknote$skewness - mean(banknote$skewness)
+
+banknote$kurtosis.c = banknote$kurtosis - mean(banknote$kurtosis)
+
+banknote$entropy.c = banknote$variance - mean(banknote$entropy)
+```
+
+```{r}
+fit_int_c_1 = glm (notAuthentic ~ variance.c + skewness.c + kurtosis.c + entropy.c + 
+                    entropy.c:(variance.c + skewness.c + kurtosis.c), data=banknote, family=binomial)
+summary(fit_int_c_1)
+```
+
+Looking at the results, we can see that this model failed to converge and none of the variables are signficant (possibly due to multicollinaerity).
+
+Let us use the fit_int2 model and conduct stwpwise regression:
+
+```{r}
+fit_int2_aic = step(fit_int2, direction = 'both')
+summary(fit_int2_aic)
+```
+
+The AIC criterion keeps all of the non-interacted variables and two of the interactions (variance and entropy and kurtosis and entropy). 
+
+The residual deviance of this model is 43.657 units which is a bit lower than the residual deviance from the non-interacted model.
+
+Let us have a look at the stepwise regression with the BIC criterion:
+
+```{r}
+fit_int2bic = step(fit_int2, direction = "both", k = log(fit_int2$rank + fit_int2$df.residual))
+
+summary(fit_int2bic)
 
 ```
 
-BIC removes every interaction
-
-
-How about AIC:
-```{r}
-
-fit_int1_aic = step(fit_int1, direction = 'both')
-summary(fit_int1_aic)
-
-```
+The BIC criterion removes all interaction effects and removes entropy from the model. The residual deviance of this model is the same as the non-interacted model of 53.299 (since the resultant model is the same).
 
