@@ -295,7 +295,7 @@ summary(fit_int_c_1)
 
 Looking at the results, we can see that this model failed to converge and none of the variables are signficant (possibly due to multicollinaerity).
 
-Let us use the fit_int2 model and conduct stwpwise regression:
+Let us use the fit_int2 model and conduct stepwise regression:
 
 ```{r}
 fit_int2_aic = step(fit_int2, direction = 'both')
@@ -315,5 +315,118 @@ summary(fit_int2bic)
 
 ```
 
-The BIC criterion removes all interaction effects and removes entropy from the model. The residual deviance of this model is the same as the non-interacted model of 53.299 (since the resultant model is the same).
+The BIC criterion removes all interaction effects and removes entropy from the model. The residual deviance of this model is the same as the non-interacted model of 53.299 (since the resultant model is the same as well).
+
+since hte residual deviance is smaller for the AIC model, we will use that as our final model.
+
+Let us now have a look at the signficant interactions remaining in the model:
+
+1) *Variance:entropy*
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+categorize = function (x) {
+  quartiles = summary (x) [c(2, 3, 5)]
+  result = rep ("Q1", length (x))
+  result [(quartiles[1] < x) & (x <= quartiles [2])] = "Q2"
+  result [(quartiles[2] < x) & (x <= quartiles [3])] = "Q3"
+  result [quartiles[3] < x] = "Q4"
+  return (result)
+}
+
+with(banknote,
+     qplot(x = variance, y = predict(fit_int2_aic), color = categorize(entropy)) +
+       geom_smooth(method = 'lm'))
+```
+
+The slopes of variance and entropy are different for each category of entropy (based on quartiles). It shows that the logit prediction of the unauthenticity of banknotes decreases steeply with higher levels of variance as entropy increases. However, as the variance increases, the predicted logit fit of unauthenticity increases at a slower rate for the first quartile values of entropy. 
+
+Therefore, the relationship between variance and the unauthetnicity of banknotes is significant for different values of entropy.
+
+2) *Kurtosis:entropy*
+
+```{r}
+with(banknote,
+     qplot(x = kurtosis, y = predict(fit_int2_aic), color = categorize(entropy)) +
+       geom_smooth(method = 'lm'))
+```
+
+The slopes of kurtosis and entropy are different for each category of entropy (based on quartiles). The slopes for each category of entropy is not very different which is why the interaction is not extremely significant. The slopes are slightly different. The value of predicted logit values is the lowest for the largest quartile group of entropy as kurtosis increases. However, the difference in the slopes for the rest of the categories of entropy are not extremely different. 
+
+Therefore, the relationship between kurtosis and the unauthetnicity of banknotes is significant for different values of entropy.
+
+
+## Final Model
+
+### Parameter Estimates
+
+The final model is the AIC model of the interaction model (fit_int2_aic). 
+
+Let us have a look at the summary of the model one more time to understand the parameters:
+
+```{r}
+summary(fit_int2_aic)
+```
+
+Looking at this model, we can see that all individual predictors, except entropy, are significant at the 0.001 level and the two interaction effects are also significant. However, the interaction between variance and entropy is more significant at the 0.01 level, while the interaction between kurtosis and entropy is signficant at the 0.05 level. 
+
+Since variance, kurtosis, and entropy are involved in interactions, it is harder to interpret the individual parameter estimates. However, we can interpret the estimate of skewness.
+
+Looking at the results here, we can see that variance, skewness, kurtosis, and entropy have a negative effect on the banknote being not authentic. Further, both the interactions also have a negative effect on the response variable. We can also see that the residual deviance is 43.567 units. 
+
+### Odds Ratio
+
+```{r}
+cbind.data.frame(exp.beta = exp(fit_int2_aic$coefficients), exp(as.data.frame(confint(fit_int2_aic))))
+```
+
+Looking at the table produced, we can interpret the odds ratio and confidence intervals for skewness which is the only variable not involved in an interactions (the interpretations of the interaction effects are shown above as interaction plots):
+
+The odds of the banknote being fake is 0.00844 times higher for a one-unit increase in skewness. We are 95% confident that the odds of the banknote being fake is between 0.000586 and 0.0483 times larger for a one unit increase in skewness.
+
+### Confidence and Prediction Intervals
+
+```{r}
+predict(fit_int2_aic, interval = 'confidence')
+predict(fit_int2_aic, interval = 'prediction')
+```
+
+NEED TO COMPLETE
+
+## Model Diagnostics
+
+### Goodness-of-Fit Test and Likelihood Ratio Test
+
+```{r}
+
+```
+
+
+### Deviance Residuals v/s Fitted Values
+
+```{r}
+
+```
+
+
+### Influence Diagnostic Analysis
+
+```{r}
+
+```
+
+
+### ROC Plot
+
+```{r}
+
+```
+
+
+
+## Conclusion
+
+
 
