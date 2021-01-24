@@ -389,7 +389,7 @@ The odds of the banknote being fake is 0.00844 times higher for a one-unit incre
 ### Confidence and Prediction Intervals
 
 ```{r}
-pc_aic = predict (aic_cent,interval = "confidence")
+pc_aic = predict (fit_int2_aic,interval = "confidence")
 pc_aic2 = as.data.frame(pc_aic)
 sort_aic = order(as.data.frame(pc_aic)$fit)
 sqrt(as.data.frame(pc_aic)[sort_aic,][c(40,100,500,1000, 1500,2100),])
