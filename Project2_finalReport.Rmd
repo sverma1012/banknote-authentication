@@ -388,11 +388,30 @@ The odds of the banknote being fake is 0.00844 times higher for a one-unit incre
 
 ### Confidence and Prediction Intervals
 
+
+
 ```{r}
-pc_aic = predict (fit_int2_aic,interval = "confidence")
-pc_aic2 = as.data.frame(pc_aic)
+
+fit.logits = predict (fit_int2_aic, se.fit=T)
+
+# Logit scale predictions and confidence limits (lwr, upr)
+
+fit.preds = data.frame (logit.fit = fit.logits$fit,
+se.fit = fit.logits$se.fit)
+fit.preds$logit.lwr = fit.preds$logit.fit - 1.96 * fit.preds$se.fit
+fit.preds$logit.upr = fit.preds$logit.fit + 1.96 * fit.preds$se.fit
+
+# Probability scale predictions and confidence limits (lwr, upr)
+
+fit.preds$prob.fit = exp (fit.preds$logit.fit) / (1 + exp (fit.preds$logit.fit))
+fit.preds$prob.lwr = exp (fit.preds$logit.lwr) / (1 + exp (fit.preds$logit.lwr))
+fit.preds$prob.upr = exp (fit.preds$logit.upr) / (1 + exp (fit.preds$logit.upr))
+### 
+
+
 sort_aic = order(as.data.frame(pc_aic)$fit)
 sqrt(as.data.frame(pc_aic)[sort_aic,][c(40,100,500,1000, 1500,2100),])
+
 ```
 
 There are only 6 values represented in this, which are lower, medium and bigger.
@@ -407,14 +426,32 @@ When the predicted life expectancy is 80.3 years, with 95% confidence the mean o
 
 ### Goodness-of-Fit Test and Likelihood Ratio Test
 
+#### Likelihood Ratio Test
 ```{r}
+pchisq(fit_int2_aic$null.deviance - fit_int2_aic$deviance,
+fit_int2_aic$df.null - fit_int2_aic$df.residual,
+lower.tail = F)
 
 ```
+There is no significant lack of fit in either the first model or the final model (p > 0.05).
+
+11.2 
+
+#### Assessing Utility
+
+```{r}
+pchisq(deviance(fit_int2_aic), df.residual(fit_int2_aic), lower=F)
+```
+
+11.2
+
+
 
 
 ### Deviance Residuals v/s Fitted Values
 
 ```{r}
+plot(fit_int2_aic, which = 1)
 
 ```
 
@@ -422,13 +459,45 @@ When the predicted life expectancy is 80.3 years, with 95% confidence the mean o
 ### Influence Diagnostic Analysis
 
 ```{r}
-
+plot(fit_int2_aic, which = 5)
 ```
 
-
+NEWER K WHO DIS!!!
 ### ROC Plot
 
 ```{r}
+# ROC curve - install package ROCR
+par (mfrow=c(1,1))
+library(ROCR)
+pred1 <- prediction(fit_int2_aic$fitted.values, fit_int2_aic$y)
+perf1 <- performance(pred1,"tpr","fpr")
+auc1 <- performance(pred1,"auc")@y.values[[1]]
+auc1
+plot(perf1, lwd=2, col=2)
+abline(0,1)
+legend(0.6, 0.3, c(paste ("AUC=", round (auc1, 4), sep="")),   lwd=2, col=2)
+
+# Extract the X and Y values from the ROC plot, as well as the probability cutoffs
+roc.x = slot (perf1, "x.values") [[1]]
+roc.y = slot (perf1, "y.values") [[1]]
+cutoffs = slot (perf1, "alpha.values") [[1]]
+
+auc.table = cbind.data.frame(cutoff=pred1@cutoffs, 
+                             tp=pred1@tp, fp=pred1@fp, tn=pred1@tn, fn=pred1@fn)
+names (auc.table) = c("Cutoff", "TP", "FP", "TN", "FN")
+auc.table$sensitivity = auc.table$TP / (auc.table$TP + auc.table$FN)
+auc.table$specificity = auc.table$TN / (auc.table$TN + auc.table$FP)
+auc.table$FalsePosRate = 1 - auc.table$specificity
+auc.table$sens_spec = auc.table$sensitivity + auc.table$specificity
+
+# Find the row(s) in the AUC table where sensitivity + specificity is maximized
+
+auc.best = auc.table [auc.table$sens_spec == max (auc.table$sens_spec),]
+auc.best
+
+# Plot the maximum point(s) on the ROC plot
+
+points (auc.best$FalsePosRate, auc.best$sensitivity, cex=1.3)
 
 ```
 
