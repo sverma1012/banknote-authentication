@@ -408,25 +408,25 @@ fit.preds$prob.lwr = exp (fit.preds$logit.lwr) / (1 + exp (fit.preds$logit.lwr))
 fit.preds$prob.upr = exp (fit.preds$logit.upr) / (1 + exp (fit.preds$logit.upr))
 ### 
 
-
-sort_aic = order(as.data.frame(pc_aic)$fit)
-sqrt(as.data.frame(pc_aic)[sort_aic,][c(40,100,500,1000, 1500,2100),])
+sort_aic = order(as.data.frame(fit.preds)$prob.fit)
+as.data.frame(fit.preds)[sort_aic,][c(230, 691, 606, 503, 859, 1286), c(5,6,7)]
 
 ```
 
 There are only 6 values represented in this, which are lower, medium and bigger.
 
-When the predicted life expectancy is 52.9 years, with 95% confidence the mean of life expectancy is between 49.9 and 55.8 years.
+When the predicted probability of non-authenticity is 2.18e-20, with 95% confidence the mean of the probability of non-authenticity is between 1.9e-29 and 2.5e-11.
 
-When the predicted life expectancy is 70.9 years, with 95% confidence the mean of life expectancy is between 69.4 and  72.3 years.
+When the predicted probability of non-authenticity is 2.37e-14, with 95% confidence the mean of the probability of non-authenticity is between 1.69e-20 and 3.31e-08.
 
-When the predicted life expectancy is 80.3 years, with 95% confidence the mean of life expectancy is between 79.5 and 81.2 years.
+When the predicted probability of non-authenticity is approximately 1, with 95% confidence the mean of the probability of non-authenticity is between 0.992 and 1.
 
 ## Model Diagnostics
 
 ### Goodness-of-Fit Test and Likelihood Ratio Test
 
 #### Likelihood Ratio Test
+
 ```{r}
 pchisq(fit_int2_aic$null.deviance - fit_int2_aic$deviance,
 fit_int2_aic$df.null - fit_int2_aic$df.residual,
@@ -437,7 +437,7 @@ There is no significant lack of fit in either the first model or the final model
 
 11.2 
 
-#### Assessing Utility
+#### Goodness-of-Fit Test
 
 ```{r}
 pchisq(deviance(fit_int2_aic), df.residual(fit_int2_aic), lower=F)
@@ -462,7 +462,8 @@ plot(fit_int2_aic, which = 1)
 plot(fit_int2_aic, which = 5)
 ```
 
-NEWER K WHO DIS!!!
+NEW K
+
 ### ROC Plot
 
 ```{r}
