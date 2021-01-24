@@ -389,11 +389,19 @@ The odds of the banknote being fake is 0.00844 times higher for a one-unit incre
 ### Confidence and Prediction Intervals
 
 ```{r}
-predict(fit_int2_aic, interval = 'confidence')
-predict(fit_int2_aic, interval = 'prediction')
+conf_int = predict(fit_int2_aic, interval = "confidence")
+conf_int2 = as.data.frame(conf_int)
+sort_aic = order(as.data.frame(conf_int))
+sort_aic[c(40,100,500,700, 850,990),]
 ```
 
-NEED TO COMPLETE
+There are only 6 values represented in this, which are lower, medium and bigger.
+
+When the predicted life expectancy is 52.9 years, with 95% confidence the mean of life expectancy is between 49.9 and 55.8 years.
+
+When the predicted life expectancy is 70.9 years, with 95% confidence the mean of life expectancy is between 69.4 and  72.3 years.
+
+When the predicted life expectancy is 80.3 years, with 95% confidence the mean of life expectancy is between 79.5 and 81.2 years.
 
 ## Model Diagnostics
 
