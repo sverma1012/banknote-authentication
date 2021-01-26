@@ -7,7 +7,7 @@ output: word_document
 
 ## Abstract
 
-DO AT THE END OF THE PROJECT
+This research focuses on whether a baknote is authentic or not based on images that were taken and its features. We started by conducting basic exploration of each of the variables to understand if there were any skewness that needed to be dealt with. There was low to moderate skewneess but it was not of a large concern due to which we did not conduct any transformations on our variables. Then, we conducted a first-order model to see which variabels are signficant and found that all variables except entropy are signficant in determining if the image is of a real or fake banknote. After this, we conducted step-wise regression and got similar results because of which we added interaction effects and did stepwise regression with the AIC criterion and found that the interaction between variance and entropy, and kurtosis and entropy are significant at a 0.05 level. It appears that our model is a close-to-perfect fit to the dataset because it has linearity, as checked from model diagnostics, and high sensitivity and specificity rates indicating that its predictive powers is high. Further, the area under the ROC curve is close to 1 (0.9998), further, confirmation of the model's perfect fitness. There are points that have a high leverage values and there is one point that has a high Cook's distance value. For further investigation, we would suggest looking at these points to understand how we can deal with them.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -425,8 +425,6 @@ When the predicted probability of non-authenticity is approximately 1, with 95% 
 
 ## Model Diagnostics
 
-### Goodness-of-Fit Test and Likelihood Ratio Test
-
 #### Likelihood Ratio Test
 
 ```{r}
@@ -435,9 +433,8 @@ fit_int2_aic$df.null - fit_int2_aic$df.residual,
 lower.tail = F)
 
 ```
-our final model results in a highly significant difference between the null deviance and residual deviance as we have a very low p value. 
 
-11.2 
+Our final model results in a highly significant difference between the null deviance and residual deviance as we have a p-value of 0. 
 
 #### Goodness-of-Fit Test
 
@@ -445,8 +442,7 @@ our final model results in a highly significant difference between the null devi
 pchisq(deviance(fit_int2_aic), df.residual(fit_int2_aic), lower=F)
 ```
 
-As we do not have multiple observations for the most combinations of predictor
-values, we cannot perform the goodness of fit test. 
+As we do not have multiple observations for the most combinations of predictor values, the goodness-of-fit test is not the ideal test for assessing utility. However, we can see that the p-value is one which indicates a singificant difference between the deviances.
 
 
 ### Deviance Residuals v/s Fitted Values
@@ -456,8 +452,7 @@ plot(fit_int2_aic, which = 1)
 
 ```
 
-The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning; it shows clear linearity. Further, there do appear to be a few points with high residual value (line observations 943). 
-
+The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning: it shows clear linearity. Further, there do appear to be a few points with high residual value (line observation 943). 
 
 ### Influence Diagnostic Analysis
 
@@ -470,9 +465,10 @@ On the residuals vs leverage plot, none of the residuals are greater than +/- 3 
 so we don’t appear to have any major residual outliers.
 
 Let's calculate  very high values for Leverage in our dataset:
-Using the formula (3(k+1))/n we found that our very high leverage value is 0.015. There are many data points which have high leverage points in this plot. Thus, there are some points with somewhat high amounts of influence.
 
-We can also see the Cook's distance on the plot, and we can see observation 943 is slightly above cook's distance cutoff. It might have some influence on the model. 
+Using the formula (3(k+1))/n we found that our very high leverage value is 0.015. There are many data points which have high leverage points in this plot. Thus, there are multiple points with high amounts of influence.
+
+We can also see the Cook's distance on the plot, and we can see observation 943 is slightly above cook's distance cutoff of 0.5. This might has high influence (leverage) and a relatively high standardizeed residual.
 
 ### ROC Plot
 
@@ -512,13 +508,21 @@ points (auc.best$FalsePosRate, auc.best$sensitivity, cex=1.3)
 
 ```
 
-We can see our model does a great job because we have an AUC of 0.9998, showing that the model correctly predicted 99.98% of cases.
+The ROC curve shows the trade-off between sensitivity and specificity. We can see our model does a great job because we have an AUC of 0.9998, showing that the model correctly predicted 99.98% of cases (nearly all the cases).
 
 We can also see that our model does a good job at predicting both non-failures and failures. 
-We can see that the specifity, which is the probability of true negative prediction;is 0.9934.
+
+We can see that the specifity, which is the probability of true negative prediction is 0.9934.
+
 The sensitivity of the model is 0.9934, which shows us the probability of a true positive prediction. 
 
 ## Conclusion
 
+After going through all the necessary steps to make the model more reliable and predictable, the final model uses the AIC criterion of the partially-interacted effects which includes multiple variables and interactions that are significant to make a prediction. We conducted step-wise regresison on our first-order model and an interacted model and concluded that the interacted model is a better fit because of a smaller residual deviance.
 
+The final model has a residual deviance 43.657 units (of authenticity) and the AIC score is 57.657.
+
+The final model shows that most of the variables of the model are signficant, except entropy. However, the ROC curve and the model diagnostics show that the final model is a close, if not completely, perfect predictive model of whether a banknote is fake or authentic based on certain image chracteristics. Also, with the influence diagnostic model, we found out that there a lot of points that have a large leverage value and there is an observation that has a higher Cook's distance value than the cutpff of 0.5. For further investigation, we would suggest looking at these points closely to further understand thesee anomolies and how to deal with them. 
+
+We would recommend seeing if there are any more features that can be recorded from an image but this model is a good model to use to understand the authenticity of banknotes.
 
