@@ -1,0 +1,524 @@
+#' ---
+#' title: "Logistic Regression Analysis of Banknotes Authenticity"
+#' author: "C M Nafi and Sneha Verma"
+#' date: "1/28/2021"
+#' output: word_document
+#' ---
+#' 
+#' ## Abstract
+#' 
+#' This research focuses on whether a banknote is authentic or not based on images that were taken and its features. We started by conducting basic exploration of each of the variables to understand if there were any skewness that needed to be dealt with. There was low to moderate skewness but it was not of a large concern due to which we did not conduct any transformations on our variables. Then, we conducted a first-order model to see which variables are signficant and found that all variables except entropy are signficant in determining if the image is of a real or fake banknote. After this, we conducted step-wise regression and got similar results because of which we added interaction effects and did stepwise regression with the AIC criterion and found that the interaction between variance and entropy, and kurtosis and entropy are significant at a 0.05 level. It appears that our model is a close-to-perfect fit of the dataset because it has linearity, as checked from model diagnostics, and high sensitivity and specificity rates indicating that its predictive powers is high. Further, the area under the ROC curve is close to 1 (0.9998), further confirmation of the model's perfect fitness. There are points that have high leverage values and there is one point that has a high Cook's distance value. For further investigation, we would suggest looking at these points to understand how we can deal with them.
+#' 
+## ----setup, include=FALSE-----------------------------------------------
+knitr::opts_chunk$set(echo = TRUE)
+
+#' 
+#' NOTE: Before running the file, make sure that the location of the data corresponds with the location on your device.
+#' 
+#' This dataset (obtained from [Kaggle](https://www.kaggle.com/ritesaluja/bank-note-authentication-uci-data)) was generated from genuine and forged banknote images.An industrial camera was used for print inspection and the Wavelet Transform tool were used to extract features from the images.
+#' 
+#' This research project will focus on the central question:
+#' 
+#' **How well can the image features predict if the banknote is counterfeit?**
+#' 
+#' The dataset has 5 features and 1372 observations. The features are as follows:
+#' 
+#' 1) **variance**: is a continuous value which finds how each pixel varies from the neighboring pixels and classifies them into different regions. If the pixel values are close to the mean pixel value then the variance is low and if they are not close to the mean pixel value theen it is a high variance.
+#' 
+#' 2) **skewness**: is a continuous value measuring the lack of symmetry. A symmetric data would have a value of 0. Negative values indicate left-skewness and positive values indicate right-skewness.
+#' 
+#' 3) **kurtosis**: a continuous value measuring whether the data is heavy-tailed or light-tailed relative to a normal distribution. Datasets with high kurtosis have heavy-tails or outliers and those with low kurtosis have light tails or lack of outliers.
+#' 
+#' 4) **entropy**: is a continuous value representing a quantity used to describe the amount of information which must be coded for, by a compression algorithm. A higher entropy value implies that there is a higher amount of information in the image.
+#' 
+#' 5) **class**: is the target, binary variable where a value of 0 represents a geunine or authentic bank note and a value of 1 represents a fake note.
+#' 
+#' ## Import Dataset
+#' 
+## -----------------------------------------------------------------------
+banknote = read.csv('Original_Banknote_Authentication.csv')
+head(banknote)
+
+# Let us rename the variable curtosis to the more commonly used spelling
+names(banknote)[names(banknote) == 'curtosis'] = 'kurtosis'
+names(banknote)[names(banknote) == 'class'] = 'notAuthentic'
+
+#' 
+#' 
+#' ## Data Characteristics
+#' 
+#' Looking at this dataset, it can be observed that there are five variables (one of them is the target variable: notAuthentic). 
+#' 
+#' ### Scatterplot Matrix
+#' 
+#' Let us create a scatterplot matrix coloured by the outcome variable:
+#' 
+## -----------------------------------------------------------------------
+pairs(banknote, col=banknote$notAuthentic+1)
+
+#' 
+#' The scatterplot matrix shows that there might be a relationship between some of the predictor variables and the response variable. It appears that for lower values of variance in the image, the banknote is likely to be fake and images with higher variance values were of genuine bank notes. Further, it appears that genuine bank notes have higher skewness; however, there does not appear to be a high level of correlation because fake bank notes also have relatively high bank skewness. Similarly, genuine bank notes have lower values of kurtosis as compared to fake notes; however, fake notes have kurtosis values of the entire range, this may make it harder to differentiate between genuine and fake banknotes. Lastly, it appears that entropy is not a good predictor of authenticity because images of fake and genuine banknotes have entropy values of the entire range of possible values indicating a weak relationship between teh two variables.
+#' 
+#' ### Correlation Matrix
+#' 
+## -----------------------------------------------------------------------
+#install.packages('reshape2')
+#install.packages('ggplot2')
+
+banknoteCorr <- round(cor(banknote),2)
+head(banknoteCorr)
+
+library(reshape2)
+melted_banknote <- melt(banknoteCorr)
+head(melted_banknote)
+
+library(ggplot2)
+ggplot(data = melted_banknote, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+
+#' 
+#' This matrix shows the correlation matrix between the variables in the data set. Lighter boxes indicate higher correlation values. 
+#' 
+#' It appears that there is a high correlation between the authenticity of banknotes and the kurtosis. There also appears to be a relatively higher correlation between authenticity and entropy compared to the correlation between skewness and variance with authenticity. This is interesting because the scatterplot matrix between authenticity and entropy does not show a strong relationship.
+#' 
+#' ### Plots of Individual Variables
+#' 
+#' #### variance
+#' 
+## -----------------------------------------------------------------------
+summary(banknote$variance)
+
+#' 
+#' The minimum value of variance is -7 variance units and the maximum value is 6.8 variance units with a median of 0.496 and a mean of 0.434. 
+#' 
+## ----fig.height=5, fig.width=8.5----------------------------------------
+par(mfrow=c(1,2))
+hist(banknote$variance, xlab = "Distribution of image variance")
+boxplot(banknote$variance, xlab = "Distribution of image variance")
+
+#' 
+#' The histogram of the variance shows mild left-skewness; however, since it the skewness is only slight, no transformation will be conducted. Further, the boxplot shows that there are no outliers in this variable. 
+#' 
+#' #### skewness
+#' 
+## -----------------------------------------------------------------------
+summary(banknote$skewness)
+
+#' 
+#' The minimum value of skewness is -13.77 skewness units and the maximum value is 12.95 skewness units with a median of 2.32 and a mean of 1.92. 
+#' 
+## ----fig.height=5, fig.width=8.5----------------------------------------
+par(mfrow=c(1,2))
+hist(banknote$skewness, xlab = "Distribution of image skewness")
+boxplot(banknote$skewness, xlab = "Distribution of image skewness")
+
+#' 
+#' The histogram of the skewness shows slight or moderate left-skewness; however, since it the skewness is only slight, no transformation will be conducted.
+#' Further, the boxplot shows that there are no outliers in this variable. The boxplot also shows the left-skewness with a long lower tail.
+#' 
+#' #### kurtosis
+#' 
+## -----------------------------------------------------------------------
+summary(banknote$kurtosis)
+
+#' 
+#' The minimum value of variance is -5.29 kurtosis units and the maximum value is 17.93 kurtosis units with a median of 0.617 and a mean of 1.398. 
+#' 
+#' 
+## ----fig.height=5, fig.width=8.5----------------------------------------
+par(mfrow=c(1,2))
+hist(banknote$kurtosis, xlab = "Distribution of image kurtosis")
+boxplot(banknote$kurtosis, xlab = "Distribution of image kurtosis")
+
+#' 
+#' The histogram of the variance shows moderate right-skewness. Further, the boxplot displays this skewness with a longer upper tail and also displays outliers at the upper end of the distribution. However, since there is moderate skewness, we will not transform the variable at this point.
+#' 
+#' #### entropy
+#' 
+## -----------------------------------------------------------------------
+summary(banknote$entropy)
+
+#' 
+#' The minimum value of variance is -8.55 entropy units and the maximum value is 2.45 entropy units with a median of -0.59 and a mean of -1.19. 
+#' 
+#' 
+## ----fig.height=5, fig.width=8.5----------------------------------------
+par(mfrow=c(1,2))
+hist(banknote$entropy, xlab = "Distribution of image entropy")
+boxplot(banknote$entropy, xlab = "Distribution of image entropy")
+
+#' 
+#' The histogram of the variance shows moderate left-skewness. Further, the boxplot displays this skewness with a long lower tail and also displays outliers at the lower end of the distribution. However, since there is only moderate skewness, we will not apply a transformation at the point.
+#' 
+#' 
+#' ## First-Order Logistic Regression Model
+#' 
+#' Let us now fit a logistic regression model that includes all of the variables.
+#' 
+## -----------------------------------------------------------------------
+fit1 = glm(notAuthentic ~ variance + skewness + kurtosis + entropy, data = banknote, family = binomial)
+summary(fit1)
+
+#' 
+#' While this fit produces a warning message, it does converge on parameter estimates and p-values. From the resultant summary, we can see that all variables are significant at the 0.001 significance level, except for entropy which is significant at the 0.1 level only. The slopes are given in the logit form, let us convert it to the odds ratio.
+#' 
+## -----------------------------------------------------------------------
+exp(fit1$coefficients)
+exp(confint(fit1))
+
+#' 
+#' The odds of the note being fake is 0.00039 times higher for each unit of variance with a 95% confidence interval of 0.0000059 to 0.00621 higher odds of the note being fake per variance unit.
+#' 
+#' The odds of the note being fake is 0.0151 times higher for each unit of skewness with a 95% confidence interval of 0.00171 to 0.0641 higher odds of the note being fake per skewness unit.
+#' 
+#' The odds of the note being fake is 0.00505 times higher for each unit of kurtosis with a 95% confidence interval of 0.000306 to 0.0320 higher odds of the note being fake per kurtosis unit.
+#' 
+#' The odds of the note being fake is 0.546 times higher for each unit of entropy with a 95% confidence interval of 0.273 to 1.04 higher odds of the note being fake per entropy unit.
+#' 
+#' ### Model Diagnostics
+#' 
+#' *1) Jittered response v/s predicted values*
+#' 
+## ----fig.height=3.5, fig.width=7.5--------------------------------------
+par(mfrow=c(1,2))
+logit.fit1 = predict(fit1)
+plot (jitter (notAuthentic, 0.2) ~ logit.fit1, data=banknote)
+
+pihat.fit1 = predict(fit1, type='response')
+pihat.ord = order(pihat.fit1)
+lines (logit.fit1[pihat.ord], pihat.fit1[pihat.ord])
+lines (lowess (logit.fit1[pihat.ord], pihat.fit1[pihat.ord]), col='red', lty=2)
+
+
+#' 
+#' From the "Jittered response v/s predicted values"  plot, we can see the probability of predicted logit. We can see that the probability is 1 when logit values are greater than 0. This plot shows that the logistic regression is a perfect fit to the model because the logit values when the note is genuine are clustered at the lower-left of the graph and the values when the note is fake are clustered at the top-right and the logistic curve predicts this clear distinction and nealy perfectly fits the data. 
+#' 
+#' On the other hand, the smoothing spline bends at certain data points which is not mirrored by the logistic curve.
+#' 
+#' We are going to check the residual v/s Fitted values next to check the linearity. 
+#' 
+#' *2) Residuals v/s Fitted Values*
+#' 
+## -----------------------------------------------------------------------
+plot(fit1, which = 1)
+
+#' 
+#' The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning; it shows clear linearity. Further, there do appear to be a few points with relatively high outliers (line observations 919 and 943).
+#' 
+#' *3) Leverage*
+#' 
+## -----------------------------------------------------------------------
+plot(fit1, which = 5)
+
+#' 
+#' In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset.
+#' On the residuals vs leverage plot, there is a residual greater than +/- 3 standardized pearson residuals and one residual that is close to a value of 3.
+#' 
+#' Let's calculate  very high values for Leverage in our dataset:
+#' Using the formula (3(k+1))/n we found that our very high leverage value is 0.01093. There are many data points which have high leverage points in this plot. Thus, there are points with high amounts of influence.
+#' 
+#' We can also see the Cook's distance on the plot, which looks fine because all of the values are less than 0.5. 
+#' 
+#' *4) Multicollinearity*
+#' 
+## -----------------------------------------------------------------------
+car::vif(fit1)
+
+#' 
+#' We can see that some predictors are highly correlated to each other because their VIF value are greater than 5. Only entropy has a VIF value of less than 5. 
+#' 
+#' ## Model Selection
+#' 
+#' ### Stepwise Regression
+#' 
+#' Let us now apply stepwise regression to the first-order model to see which variables should be kept in the model.
+#' 
+## -----------------------------------------------------------------------
+fit1aic = step(fit1, direction = 'both')
+summary(fit1aic)
+
+#' 
+#' According to this result, there are no steps that can be taken to decrease the value of AIC.
+#' 
+#' Let us now try stepwise regression with the BIC criterion:
+#' 
+## -----------------------------------------------------------------------
+fit1bic = step(fit1, direction = "both", k = log(fit1$rank + fit1$df.residual))
+
+summary(fit1bic)
+
+#' 
+#' The result in BIC stepwise regression removed entropy from the model.  
+#' We can also see that the residual deviance is slightly better in AIC (49.891) compare to BIC (53.299) although the diffeerence is not too large. Due to this, if we were to continue with the model, we would recommend using the AIC criterion.
+#' 
+#' ### Interaction Model
+#' 
+#' Now we are going to check interaction effects for all variables: 
+#' 
+## -----------------------------------------------------------------------
+fit_int1 = glm(notAuthentic ~ (variance + skewness + kurtosis + entropy)^2, family = binomial, data = banknote)
+
+summary(fit_int1)
+
+#' 
+#' This interaction model gives an error that the algorithm has not been able to converge and all the variables in this model have high p-values close to 1.0 making them insignificant.
+#' 
+#' Let us try another interaction plot with a few of the variables:
+#' 
+## -----------------------------------------------------------------------
+fit_int2 = glm (notAuthentic ~ variance + skewness + kurtosis + entropy + 
+                    entropy:(variance + skewness + kurtosis), data=banknote, family=binomial)
+summary(fit_int2)
+
+#' 
+#' This model converges to a solution. With the results table, one can observe that all the variables (without interactions) are significant, except entropy and the variance and entropy interaction are significant at the 0.05 significance level. 
+#' 
+#' 
+#' Before we interpret the results, let us attempt this model with centered variables:
+#' 
+## -----------------------------------------------------------------------
+banknote$variance.c = banknote$variance - mean(banknote$variance)
+
+banknote$skewness.c = banknote$skewness - mean(banknote$skewness)
+
+banknote$kurtosis.c = banknote$kurtosis - mean(banknote$kurtosis)
+
+banknote$entropy.c = banknote$variance - mean(banknote$entropy)
+
+#' 
+## -----------------------------------------------------------------------
+fit_int_c_1 = glm (notAuthentic ~ variance.c + skewness.c + kurtosis.c + entropy.c + 
+                    entropy.c:(variance.c + skewness.c + kurtosis.c), data=banknote, family=binomial)
+summary(fit_int_c_1)
+
+#' 
+#' Looking at the results, we can see that this model failed to converge and none of the variables are signficant (possibly due to multicollinaerity).
+#' 
+#' Let us use the fit_int2 model and conduct stepwise regression:
+#' 
+## -----------------------------------------------------------------------
+fit_int2_aic = step(fit_int2, direction = 'both')
+summary(fit_int2_aic)
+
+#' 
+#' The AIC criterion keeps all of the non-interacted variables and two of the interactions (variance and entropy, and kurtosis and entropy). 
+#' 
+#' The residual deviance of this model is 43.657 units which is a bit lower than the residual deviance from the non-interacted model.
+#' 
+#' Let us have a look at the stepwise regression with the BIC criterion:
+#' 
+## -----------------------------------------------------------------------
+fit_int2bic = step(fit_int2, direction = "both", k = log(fit_int2$rank + fit_int2$df.residual))
+
+summary(fit_int2bic)
+
+
+#' 
+#' The BIC criterion removes all interaction effects and removes entropy from the model. The residual deviance of this model is the same as the non-interacted model of 53.299 (since the resultant model is the same as well).
+#' 
+#' Since the residual deviance is smaller for the AIC model, we will use that as our final model.
+#' 
+#' Let us now have a look at the signficant interactions remaining in the model:
+#' 
+#' *1) Variance:entropy*
+#' 
+## -----------------------------------------------------------------------
+library(ggplot2)
+library(dplyr)
+
+categorize = function (x) {
+  quartiles = summary (x) [c(2, 3, 5)]
+  result = rep ("Q1", length (x))
+  result [(quartiles[1] < x) & (x <= quartiles [2])] = "Q2"
+  result [(quartiles[2] < x) & (x <= quartiles [3])] = "Q3"
+  result [quartiles[3] < x] = "Q4"
+  return (result)
+}
+
+with(banknote,
+     qplot(x = variance, y = predict(fit_int2_aic), color = categorize(entropy)) +
+       geom_smooth(method = 'lm'))
+
+#' 
+#' The slopes of variance and entropy are different for each category of entropy (based on quartiles). It shows that the logit prediction of the unauthenticity of banknotes decrease steeply with higher levels of variance as entropy increases. However, as the variance increases, the predicted logit fit of unauthenticity increases at a slower rate for the first quartile values of entropy.
+#' 
+#' Therefore, the relationship between variance and the unauthetnicity of banknotes is significant for different values of entropy.
+#' 
+#' 2) *Kurtosis:entropy*
+#' 
+## -----------------------------------------------------------------------
+with(banknote,
+     qplot(x = kurtosis, y = predict(fit_int2_aic), color = categorize(entropy)) +
+       geom_smooth(method = 'lm'))
+
+#' 
+#' The slopes of kurtosis and entropy are different for each category of entropy (based on quartiles). The slopes for each category of entropy is not very different which is why the interaction is not extremely significant. The value of predicted logit values is the lowest for the largest quartile group of entropy as kurtosis increases. However, the difference in the slopes for the rest of the categories of entropy are not extremely different.
+#' 
+#' Therefore, the relationship between kurtosis and the unauthetnicity of banknotes is slightly significant for different values of entropy.
+#' 
+#' 
+#' ## Final Model
+#' 
+#' ### Parameter Estimates
+#' 
+#' The final model is the AIC model of the interaction model (fit_int2_aic). 
+#' 
+#' Let us have a look at the summary of the model one more time to understand the parameters:
+#' 
+## -----------------------------------------------------------------------
+summary(fit_int2_aic)
+
+#' 
+#' Looking at this model, we can see that all individual predictors, except entropy, are significant at the 0.001 level and the two interaction effects are also significant. However, the interaction between variance and entropy is more significant at the 0.01 level, while the interaction between kurtosis and entropy is signficant at the 0.05 level. 
+#' 
+#' Since variance, kurtosis, and entropy are involved in interactions, it is harder to interpret the individual parameter estimates. However, we can interpret the estimate of skewness.
+#' 
+#' Looking at the results here, we can see that variance, skewness, kurtosis, and entropy have a negative effect on the banknote being not authentic. Further, both the interactions also have a negative effect on the response variable. We can also see that the residual deviance is 43.567 units.
+#' 
+#' ### Odds Ratio
+#' 
+## -----------------------------------------------------------------------
+cbind.data.frame(exp.beta = exp(fit_int2_aic$coefficients), exp(as.data.frame(confint(fit_int2_aic))))
+
+#' 
+#' Looking at the table produced, we can interpret the odds ratio and confidence intervals for skewness which is the only variable not involved in an interaction (the interpretations of the interaction effects are shown above as interaction plots):
+#' 
+#' The odds of the banknote being fake is 0.00844 times higher for a one-unit increase in skewness. We are 95% confident that the odds of the banknote being fake is between 0.000586 and 0.0483 times larger for a one unit increase in skewness.
+#' 
+#' ### Confidence and Prediction Intervals
+#' 
+## -----------------------------------------------------------------------
+
+fit.logits = predict (fit_int2_aic, se.fit=T)
+
+# Logit scale predictions and confidence limits (lwr, upr)
+
+fit.preds = data.frame (logit.fit = fit.logits$fit,
+se.fit = fit.logits$se.fit)
+fit.preds$logit.lwr = fit.preds$logit.fit - 1.96 * fit.preds$se.fit
+fit.preds$logit.upr = fit.preds$logit.fit + 1.96 * fit.preds$se.fit
+
+# Probability scale predictions and confidence limits (lwr, upr)
+
+fit.preds$prob.fit = exp (fit.preds$logit.fit) / (1 + exp (fit.preds$logit.fit))
+fit.preds$prob.lwr = exp (fit.preds$logit.lwr) / (1 + exp (fit.preds$logit.lwr))
+fit.preds$prob.upr = exp (fit.preds$logit.upr) / (1 + exp (fit.preds$logit.upr))
+### 
+
+sort_aic = order(as.data.frame(fit.preds)$prob.fit)
+as.data.frame(fit.preds)[sort_aic,][c(230, 691, 606, 503, 859, 1286), c(5,6,7)]
+
+
+#' 
+#' There are only 6 values represented in this, which are lower, medium and bigger.
+#' 
+#' When the predicted probability of non-authenticity is 2.18e-20, with 95% confidence the mean of the probability of non-authenticity is between 1.9e-29 and 2.5e-11.
+#' 
+#' When the predicted probability of non-authenticity is 2.37e-14, with 95% confidence the mean of the probability of non-authenticity is between 1.69e-20 and 3.31e-08.
+#' 
+#' When the predicted probability of non-authenticity is approximately 1, with 95% confidence the mean of the probability of non-authenticity is between 0.992 and 1.
+#' 
+#' ## Model Diagnostics
+#' 
+#' #### Likelihood Ratio Test
+#' 
+## -----------------------------------------------------------------------
+pchisq(fit_int2_aic$null.deviance - fit_int2_aic$deviance,
+fit_int2_aic$df.null - fit_int2_aic$df.residual,
+lower.tail = F)
+
+
+#' 
+#' Our final model results in a highly significant difference between the null deviance and residual deviance as we have a p-value of 0. 
+#' 
+#' #### Goodness-of-Fit Test
+#' 
+## -----------------------------------------------------------------------
+pchisq(deviance(fit_int2_aic), df.residual(fit_int2_aic), lower=F)
+
+#' 
+#' As we do not have multiple observations for the most combinations of predictor values, the goodness-of-fit test is not the ideal test for assessing utility. However, we can see that the p-value is one which indicates a singificant difference between the deviances.
+#' 
+#' 
+#' ### Deviance Residuals v/s Fitted Values
+#' 
+## -----------------------------------------------------------------------
+plot(fit_int2_aic, which = 1)
+
+
+#' 
+#' The trendline in the residual v/s fitted plot shows little to no deviation from the horizontal zero line showing that the distribution of the residuals is not concerning: it shows clear linearity. Further, there do appear to be a few points with high residual value (line observation 943). 
+#' 
+#' ### Influence Diagnostic Analysis
+#' 
+## -----------------------------------------------------------------------
+plot(fit_int2_aic, which = 5)
+
+#' 
+#' In this 'Residuals vs Leverage plot', we are trying to check unusual points in this dataset.
+#' On the residuals vs leverage plot, none of the residuals are greater than +/- 3 standardized pearson residuals,
+#' so we don’t appear to have any major residual outliers.
+#' 
+#' Let's calculate  very high values for Leverage in our dataset:
+#' 
+#' Using the formula (3(k+1))/n we found that our very high leverage value is 0.015. There are many data points which have high leverage points in this plot. Thus, there are multiple points with high amounts of influence.
+#' 
+#' We can also see the Cook's distance on the plot, and we can see observation 943 is slightly above cook's distance cutoff of 0.5. This might has high influence (leverage) and a relatively high standardizeed residual.
+#' 
+#' ### ROC Plot
+#' 
+## -----------------------------------------------------------------------
+# ROC curve - install package ROCR
+par (mfrow=c(1,1))
+library(ROCR)
+pred1 <- prediction(fit_int2_aic$fitted.values, fit_int2_aic$y)
+perf1 <- performance(pred1,"tpr","fpr")
+auc1 <- performance(pred1,"auc")@y.values[[1]]
+auc1
+plot(perf1, lwd=2, col=2)
+abline(0,1)
+legend(0.6, 0.3, c(paste ("AUC=", round (auc1, 4), sep="")),   lwd=2, col=2)
+
+# Extract the X and Y values from the ROC plot, as well as the probability cutoffs
+roc.x = slot (perf1, "x.values") [[1]]
+roc.y = slot (perf1, "y.values") [[1]]
+cutoffs = slot (perf1, "alpha.values") [[1]]
+
+auc.table = cbind.data.frame(cutoff=pred1@cutoffs, 
+                             tp=pred1@tp, fp=pred1@fp, tn=pred1@tn, fn=pred1@fn)
+names (auc.table) = c("Cutoff", "TP", "FP", "TN", "FN")
+auc.table$sensitivity = auc.table$TP / (auc.table$TP + auc.table$FN)
+auc.table$specificity = auc.table$TN / (auc.table$TN + auc.table$FP)
+auc.table$FalsePosRate = 1 - auc.table$specificity
+auc.table$sens_spec = auc.table$sensitivity + auc.table$specificity
+
+# Find the row(s) in the AUC table where sensitivity + specificity is maximized
+
+auc.best = auc.table [auc.table$sens_spec == max (auc.table$sens_spec),]
+auc.best
+
+# Plot the maximum point(s) on the ROC plot
+
+points (auc.best$FalsePosRate, auc.best$sensitivity, cex=1.3)
+
+
+#' 
+#' The ROC curve shows the trade-off between sensitivity and specificity. We can see our model does a great job because we have an AUC of 0.9998, showing that the model correctly predicted 99.98% of cases (nearly all the cases).
+#' 
+#' We can also see that our model does a good job at predicting both non-failures and failures. 
+#' 
+#' We can see that the specifity, which is the probability of true negative prediction is 0.9934.
+#' 
+#' The sensitivity of the model is 0.9934, which shows us the probability of a true positive prediction. 
+#' 
+#' ## Conclusion
+#' 
+#' After going through all the necessary steps to make the model more reliable and predictable, the final model uses the AIC criterion of the partially-interacted effects which includes multiple variables and interactions that are significant to make a prediction. We conducted step-wise regresison on our first-order model and an interacted model and concluded that the interacted model is a better fit because of a smaller residual deviance.
+#' 
+#' The final model has a residual deviance 43.657 units (of authenticity) and the AIC score is 57.657.
+#' 
+#' The final model shows that most of the variables of the model are signficant, except entropy. However, the ROC curve and the model diagnostics show that the final model is a close, if not completely, perfect predictive model of whether a banknote is fake or authentic based on certain image chracteristics. Also, with the influence diagnostic model, we found out that there a lot of points that have a large leverage value and there is an observation that has a higher Cook's distance value than the cutpff of 0.5. For further investigation, we would suggest looking at these points closely to further understand thesee anomolies and how to deal with them. 
+#' 
+#' We would recommend seeing if there are any more features that can be recorded from an image but this model is a good, if not great, model to use to understand the authenticity of banknotes.
+#' 
+#' 
