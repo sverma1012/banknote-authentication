@@ -1,3 +1,5 @@
+![Status Update](https://img.shields.io/badge/Status-Complete-brightgreen)
+
 # Logistic Regression 
 ## Project Banknote Authentication
 Team Members:
